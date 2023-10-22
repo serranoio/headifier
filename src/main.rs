@@ -1,44 +1,13 @@
-// David Serrano
-// Made with love
-// David Serrano
-// Made with Love, 2023// David Serrano, 2023
-// Accential
-// Made with Love
-// Enjoy.
-
-use std::env;
-
+// Headifier 0.1.0
+// David Serrano, October 21st, 2023
+// MIT License
+// Made With Love ❤️
 use ratui::initRatui;
-
-
-
+use std::env;
 pub mod core;
+pub mod ratui;
 pub mod ui;
 
-pub mod ratui;
-
 fn main() {
-
-
     initRatui();
-
-
-    // let path = env::current_dir();
-
-    // let path_buf = match path {
-    //     Ok(p) => {
-    //         println!("{}", p.display());
-
-    //         p
-    //     }
-    //     Err(e) => {
-    //         panic!("No current directory{e}");
-    //     }
-    // };
-
-    // let ignore_list = core::list_git_ignore(&path_buf);
-
-    // core::visit_drs(&path_buf, &ignore_list);
-
-
 }

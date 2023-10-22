@@ -1,13 +1,4 @@
-// David Serrano, 2023
-// Accential
-// Made with Love
-// Enjoy.
-
-// David Serrano, 2023
-// Accential
-// Made with Love
-// Enjoy.
-// David Serrano, 2023
-// Accential
-// Made with Love
-// Enjoy.
+// Headifier 0.1.0
+// David Serrano, October 21st, 2023
+// MIT License
+// Made With Love ❤️
