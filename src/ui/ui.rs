@@ -23,47 +23,22 @@ impl Widget for Instructions {
   }
 }
 
-fn text_rect(r: Rect, percent_x: u16, percent_y: u16) -> Rect {
+fn text_rect(r: Rect,  decide: usize, orientation: Direction) -> Rect {
     let popup_layout = Layout::default()
-      .direction(Direction::Vertical)
+      .direction(orientation)
       .constraints([
-        Constraint::Percentage(0),
-        Constraint::Percentage(80),
-        Constraint::Percentage(100), 
+        Constraint::Percentage(50),
+        Constraint::Percentage(50),
       ])
       .split(r);
-  
-    Layout::default()
-      .direction(Direction::Horizontal)
-      .constraints([
-        Constraint::Percentage(0),
-        Constraint::Percentage(100),
-        Constraint::Percentage((100 - percent_x) / 2),
-      ])
-      .split(popup_layout[1])[1]
-}
 
-fn bottom_rect(r: Rect, percent_x: u16, percent_y: u16) -> Rect {
-    let popup_layout = Layout::default()
-      .direction(Direction::Vertical)
-      .constraints([
-        Constraint::Percentage(80),
-        Constraint::Percentage(20),
-        Constraint::Percentage(20),
-      ])
-      .split(r);
-  
-    Layout::default()
-      .direction(Direction::Horizontal)
-      .constraints([
-        Constraint::Percentage(0),
-        Constraint::Percentage(100),
-        Constraint::Percentage((100 - percent_x) / 2),
-      ])
-      .split(popup_layout[1])[1]
-}
 
+      popup_layout[decide]
+}
+      
 fn write_screen(app: &mut App, f: &mut Frame, title: &str) {
+  let orientation = change_orientation(app, true);
+  
   f.render_widget(
     Paragraph::new(format!(
         "{}{}{}",
@@ -78,7 +53,7 @@ fn write_screen(app: &mut App, f: &mut Frame, title: &str) {
     )
     .style(Style::default().fg(Color::Indexed(208)))
     .alignment(Alignment::Left),
-    text_rect(f.size(), 30, 100)
+    text_rect(f.size(), 0, orientation)
   ); 
  
   f.render_widget(
@@ -94,23 +69,33 @@ fn write_screen(app: &mut App, f: &mut Frame, title: &str) {
           )
           .style(Style::default().fg(Color::Indexed(48)))
           .alignment(Alignment::Left),
-          bottom_rect(f.size(), 30, 30)
+          text_rect(f.size(), 1, orientation)
   ) 
 }
 
+fn change_orientation(app: &mut App, is_options_screen: bool) -> Direction {
+
+  if app.size.width  > app.size.height * 2 {
+    return Direction::Horizontal
+  };
+  Direction::Vertical
+}
+
 fn options_screen(app: &mut App, f: &mut Frame, title: &str, options: String, instructions: String) {
+  let orientation = change_orientation(app, true);
+  
   f.render_widget(
     Paragraph::new(options)
     .block(
         Block::default()
-            .title("header.txt")
+            .title(title)
             .title_alignment(Alignment::Center)
             .borders(Borders::ALL)
             .border_type(BorderType::Rounded),
     )
     .style(Style::default().fg(Color::Indexed(208)))
     .alignment(Alignment::Left),
-    text_rect(f.size(), 30, 100)
+    text_rect( f.size(), 0, orientation)
   );
  
   f.render_widget(
@@ -124,7 +109,7 @@ fn options_screen(app: &mut App, f: &mut Frame, title: &str, options: String, in
           )
           .style(Style::default().fg(Color::Indexed(48)))
           .alignment(Alignment::Left),
-          bottom_rect(f.size(), 30, 30)
+          text_rect( f.size(), 1, orientation)
   );
 }
 
@@ -141,17 +126,17 @@ fn make_list(options: Vec<&str>, arrow_position: usize) -> String {
   
     format!("{} {}. {}\n", arrow, i+1, option)
   }).collect::<Vec<String>>().join("")
-
 }  
 
 pub fn initial_screen(app: &mut App, f: &mut Frame) {
   let options = vec!["Create header", "Set Ignore List", "Set Include List"];
   let options = make_list(options, app.arrow_positions.welcome_arrow);
 
-  let instructions = format!("Press 1 to move to create header screen
-Press 2 to set list of files to ignore
-Press 3 to set list of files to include.
-Or, use up and down arrow keys to navigate, and press Enter to advance");
+  let instructions = format!("1 to move to create header screen
+2 to set list of files to ignore
+3 to set list of files to include.
+Or, use up and down arrow keys to navigate,
+and press Enter to advance");
 
   options_screen(app, f, "Headifier", options, instructions)
 }
@@ -160,9 +145,10 @@ pub fn header_screen(app: &mut App, f: &mut Frame) {
   let options = vec!("From text file", "New");
   let options = make_list(options, app.arrow_positions.header_arrow);
 
-  let instructions = format!("Press 1 to use contents of header.txt base of as header
-Press 2 to write new header in terminal.
-Or, use Up and Down arrow keys to navigate, and press Enter to advance");
+  let instructions = format!("1 to use contents of header.txt base of as header
+2 to write new header in terminal.
+Or, use Up and Down arrow keys to navigate,
+ and press Enter to advance");
 
   options_screen(app, f, "Header Options", options, instructions);
   
@@ -186,7 +172,6 @@ pub fn include_screen(app: &mut App, f: &mut Frame) {
 }
 
 pub fn render(app: &mut App, f: &mut Frame) {
-    app.tick();
 
     match &app.screen {
       WelcomeScreenOptions::HeaderScreen(hs) => {

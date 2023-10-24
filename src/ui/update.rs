@@ -133,5 +133,47 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
 }
 
 
+fn options_resizing(app: &mut App, width: u16, height: u16) {
+
+
+    
+app.set_size(super::app::Size { width , height })    
+
+}
+
+
+// SCREEN RESIZING
+pub fn update_screen(app: &mut App, width: u16, height: u16) {
+    match &app.screen {
+        WelcomeScreenOptions::HeaderScreen(ref hs) => {
+            match &hs {
+                HeaderScreenOptions::FromTextFile => {
+
+                },
+                HeaderScreenOptions::Initial => {
+
+                    options_resizing(app, width, height);
+                },
+                HeaderScreenOptions::New => {
+
+                }
+            }
+        },
+        WelcomeScreenOptions::IgnoreScreen => {
+            
+        },
+        WelcomeScreenOptions::IncludeScreen => {
+            
+        },
+        WelcomeScreenOptions::Initial => {
+            options_resizing(app, width, height);
+
+        }
+    }
+}
+
+
+
+
 
 

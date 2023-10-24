@@ -2,6 +2,9 @@
 name = "headifier"
 version = "0.1.0"
 edition = "2021"
+description = "Add headers to your entire project directory!"
+license = "MIT"
+repository = "https://github.com/serranoio/headifier"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -9,3 +12,4 @@ edition = "2021"
 anyhow = "1.0.75"
 crossterm = "0.27.0"
 ratatui = "0.23.0"
+

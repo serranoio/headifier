@@ -3,18 +3,10 @@
 // MIT License
 // Made With Love ❤️
 use std::env;
-use std::error::Error;
 use std::fs::File;
-use std::fs::{self, DirEntry};
-use std::io::Write;
-use std::os;
+use std::fs::{self};
+use std::io::{Write, BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
-
-use std::io::BufRead;
-use std::io::BufReader;
-use std::io::Read;
-
-
 
 fn find(dir: &Path, name: &str) -> Option<PathBuf> {
     let mut path: Option<PathBuf> = None;
@@ -118,14 +110,6 @@ pub fn list_git_ignore(dir: &Path) -> Vec<String> {
         }
     };
 
-    // ignore_lines.push(".toml".into());
-    // ignore_lines.push(".lock".into());
-    // ignore_lines.push("target".into());
-    // ignore_lines.push("node_modules".into());
-    // ignore_lines.push("dist".into());
-    // ignore_lines.push(".json".into());
-    // ignore_lines.push(".git".into());
-
     ignore_lines
 }
 
@@ -150,14 +134,99 @@ pub fn get_dir() -> PathBuf  {
     
     let path_buf = match path {
         Ok(p) => {
-            println!("{}", p.display());
-    
             p
         }
         Err(e) => {
-            panic!("No current directory{e}");
+            panic!("{e}");
         }
     };
 
     path_buf
+}
+
+#[cfg(test)]
+mod tests {
+    use std::env;
+    use std::path::Path;
+    use std::path::PathBuf;
+
+    use super::get_dir;
+    use super::find_get_ignore;
+    use super::read_file;
+    use super::visit_drs;
+    use std::io::Write;
+
+    #[test]
+    pub fn test_get_dir() {
+        let path = get_dir();
+        let path = path.display();
+        
+        assert_eq!(env::current_dir().unwrap().display().to_string(), path.to_string());
+    }
+    
+    #[test]
+    pub fn test_find_get_ignore() {
+        let dir = get_dir();
+
+        match find_get_ignore(&dir) {
+            Ok(found) => {
+                let found = found.display();
+                let found = found.to_string();
+                assert_eq!("/Users/davidserrano/greatness/rust/headifier/.gitignore", found);
+
+            } Err(not_found) => {
+                assert_eq!(not_found, "Could not locate .gitignore")
+            }
+        }
+    }
+
+    fn create_file(test_file: &PathBuf) -> String {
+        let mut handle = std::fs::File::create(test_file).unwrap();
+
+        let contents = "I want to stay the same!"; 
+
+        write!(handle, "{contents}").unwrap();
+
+        contents.into()
+    }
+
+    #[test]
+    pub fn test_visit_dirs() {
+        // contents before
+        let main_file_path = PathBuf::from("src/main.rs");
+        let contents_before = read_file(&main_file_path);
+        
+        let ignore_list: Vec<String> = vec!["/target", "cargo.toml", "cargo.lock", "README.md"].into_iter().map(|s| s.to_string()).collect();
+        let include_list: Vec<String> = vec![".txt"].into_iter().map(|s| s.to_string()).collect();
+        
+
+        let test_file = PathBuf::from("test.txt");
+        create_file(&test_file);
+
+        visit_drs(&get_dir(),
+        &ignore_list,
+        &include_list,
+"// David Serrano");
+        // apply to this test file
+        let path = get_dir().join(test_file);
+        let contents = read_file(&path);
+        // applies changes to file
+        assert!(contents.len() > 0);  // it added // David Serrano
+        assert_eq!(contents,"// David Serrano\nI want to stay the same!");
+
+        // but dont apply to this file (since ignore_list contains /target path)
+        let path = get_dir().join(PathBuf::from("target/test_2.txt"));
+
+        assert!(read_file(&path).len() == 0);
+        
+        // contents after: and dont apply to random file
+        let contents_after = read_file(&main_file_path);
+        assert_eq!(contents_before, contents_after);
+    }
+
+    
+
+
+
+
 }

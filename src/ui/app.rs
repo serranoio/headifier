@@ -1,3 +1,4 @@
+// David Serrano
 // Headifier 0.1.0
 // David Serrano, October 21st, 2023
 // MIT License
@@ -33,6 +34,12 @@ pub struct ArrowPosition {
 }
 
 #[derive(Debug)]
+pub struct Size {
+    pub width: u16,
+    pub height: u16,
+}
+
+#[derive(Debug)]
 pub struct App {
     /// should the application exit?
     pub should_quit: bool,
@@ -53,6 +60,8 @@ pub struct App {
 
     // arrow
     pub arrow_positions: ArrowPosition,
+    // size
+    pub size: Size,
 
 }
 
@@ -74,12 +83,18 @@ impl App {
             ignore_list: list_git_ignore(&dir),
             dir,
             arrow_positions: ArrowPosition{welcome_arrow: 1, header_arrow: 1},
+            size: Size { width: 0, height: 0 }
         }
+    }
+
+    pub fn set_size(&mut self, size: Size) {
+        self.size = size;
     }
 
     
     /// Handles the tick event of the terminal.
     pub fn tick(&mut self) {
+
         if self.display_cursor_counter > 4 {
             self.display_cursor_counter = 0;
         } else if self.display_cursor_counter >= 2 {

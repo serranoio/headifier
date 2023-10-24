@@ -5,11 +5,11 @@
 use crate::ui::app::App;
 use crate::ui::event::{Event, EventHandler};
 use crate::ui::tui::Tui;
-use crate::ui::update::update;
+use crate::ui::update::{update, update_screen};
 use anyhow::Result;
 use ratatui::{backend::CrosstermBackend, Terminal};
 
-pub fn initRatui() -> Result<()> {
+pub fn init_ratui() -> Result<()> {
     // Create an application.
     let mut app = App::new();
 
@@ -29,7 +29,7 @@ pub fn initRatui() -> Result<()> {
             Event::Tick => {}
             Event::Key(key_event) => update(&mut app, key_event),
             Event::Mouse(_) => {}
-            Event::Resize(_, _) => {}
+            Event::Resize(width, height) => update_screen(&mut app, width, height)
         };
     }
 
