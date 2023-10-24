@@ -20,4 +20,4 @@
 1. Replace option that will replace all current headers with the one you want!
 
 ### Bugs/Optimizations
-1. buttons 
+1. buttons
