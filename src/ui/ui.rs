@@ -172,6 +172,7 @@ pub fn include_screen(app: &mut App, f: &mut Frame) {
 }
 
 pub fn render(app: &mut App, f: &mut Frame) {
+  app.tick();
 
     match &app.screen {
       WelcomeScreenOptions::HeaderScreen(hs) => {
