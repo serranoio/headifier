@@ -2,7 +2,7 @@
 // David Serrano, October 21st, 2023
 // MIT License
 // Made With Love ❤️
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::ui::app::App;
 

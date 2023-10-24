@@ -50,7 +50,7 @@ fn append_header(path: &PathBuf, header: &str) {
 
     let mut write_to_file = File::create(path).unwrap();
 
-    write!(write_to_file, "{header}\n{contents}");
+    write!(write_to_file, "{header}\n{contents}").unwrap();
 }
 
 fn add_header_to_file(path: &PathBuf, ignore_list: &Vec<String>,
@@ -91,21 +91,21 @@ fn find_get_ignore(dir: &Path) -> Result<PathBuf, String> {
 
 // return list of every file to ignore
 pub fn list_git_ignore(dir: &Path) -> Vec<String> {
-    let mut ignore_lines = match find_get_ignore(dir) {
+    let ignore_lines = match find_get_ignore(dir) {
         Ok(path) => {
-            let mut buf_reader = BufReader::new(File::open(path).unwrap());
+            let buf_reader = BufReader::new(File::open(path).unwrap());
 
             let mut ignore_lines: Vec<String> = vec![];
             for line in buf_reader.lines() {
                 match line {
                     Ok(l) => ignore_lines.push(l),
-                    Err(e) => break,
+                    Err(_) => break,
                 }
             }
 
             ignore_lines
         }
-        Err(err) => {
+        Err(_) => {
             vec![]
         }
     };

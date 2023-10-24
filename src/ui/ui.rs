@@ -6,7 +6,7 @@ use ratatui::{
     layout::Alignment,
     prelude::{Buffer, Rect, Layout, Constraint, Direction},
     style::{Color, Style},
-    widgets::{Block, BorderType, Borders, Paragraph, Widget, block::Title},
+    widgets::{Block, BorderType, Borders, Paragraph, Widget},
 };
 
 use crate::{ui::app::App, ui::tui::Frame};
@@ -27,8 +27,8 @@ fn text_rect(r: Rect,  decide: usize, orientation: Direction) -> Rect {
     let popup_layout = Layout::default()
       .direction(orientation)
       .constraints([
-        Constraint::Percentage(50),
-        Constraint::Percentage(50),
+        Constraint::Percentage(75),
+        Constraint::Percentage(25),
       ])
       .split(r);
 
@@ -73,7 +73,7 @@ fn write_screen(app: &mut App, f: &mut Frame, title: &str) {
   ) 
 }
 
-fn change_orientation(app: &mut App, is_options_screen: bool) -> Direction {
+fn change_orientation(app: &mut App, _is_options_screen: bool) -> Direction {
 
   if app.size.width  > app.size.height * 2 {
     return Direction::Horizontal
