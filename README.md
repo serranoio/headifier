@@ -36,3 +36,4 @@ https://github.com/serranoio/headifier/assets/75829857/e1426da1-0945-44b4-a897-5
 
 #### Bugs
 1. remove spaces from gitignore
+2. .tsx should only change .tsx files and .ts should only change .ts
