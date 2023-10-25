@@ -22,6 +22,10 @@ https://github.com/serranoio/headifier/assets/75829857/e1426da1-0945-44b4-a897-5
 * Currently the only way to undo is to remove the changes via git  
 
 ## RoadMap
+ - The release cycle happens once per month, and will happen on the first per month.
+    - Next small update will be ready on December 1st.
+    - A breaking bug will be fixed ASAP
+    - convenience bugs will be released every now and then
 
 ### Features
 1. Replace option that will replace all current headers with the one you want!
