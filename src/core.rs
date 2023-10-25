@@ -45,7 +45,7 @@ pub fn find_header(dir: &Path) -> Option<String> {
 }
 
 
-fn append_header(path: &PathBuf, header: &str) {
+fn prepend_header(path: &PathBuf, header: &str) {
     let contents = read_file(path);
 
     let mut write_to_file = File::create(path).unwrap();
@@ -54,23 +54,27 @@ fn append_header(path: &PathBuf, header: &str) {
 }
 
 fn add_header_to_file(path: &PathBuf, ignore_list: &Vec<String>,
-   include_list: &Vec<String>, header: &str) {
-    let path_as_string = path.display().to_string();
+   include_list: &Vec<String>, header: &str,
+    applied_list:  &mut Vec<String>) {
+    let path_as_string = path.display().to_string().to_ascii_lowercase();
+
 
     let mut get_ignored = false;
     for ignore in ignore_list {
+        
         if path_as_string.contains(ignore) {
             get_ignored = true;
         }
     }
-
+    
     if get_ignored {
         return;
     }
-
+    
     for include in include_list.clone() {
         if path_as_string.contains(&include) {
-            append_header(path, header)
+            applied_list.push(path.display().to_string());
+            prepend_header(path, header)
         }
     }
 }
@@ -80,7 +84,6 @@ fn find_get_ignore(dir: &Path) -> Result<PathBuf, String> {
         let entry = entry.unwrap();
 
         if entry.file_name() == ".gitignore" {
-            println!("gitignore found!");
             return Ok(entry.path());
         }
     }
@@ -98,8 +101,11 @@ pub fn list_git_ignore(dir: &Path) -> Vec<String> {
             let mut ignore_lines: Vec<String> = vec![];
             for line in buf_reader.lines() {
                 match line {
-                    Ok(l) => ignore_lines.push(l),
-                    Err(_) => break,
+                    Ok(l) => {
+                        if !(l.len() == 0) {
+                            ignore_lines.push(l.to_ascii_lowercase())
+                        }
+                    } Err(_) => break,
                 }
             }
 
@@ -114,16 +120,17 @@ pub fn list_git_ignore(dir: &Path) -> Vec<String> {
 }
 
 pub fn visit_drs(dir: &Path, ignore_list: &Vec<String>,
-    include_list: &Vec<String>, header: &str) {
+    include_list: &Vec<String>, header: &str,
+     applied_list:  &mut Vec<String>) {
     for entry in fs::read_dir(dir).unwrap() {
         let entry = entry.unwrap();
 
         let path = entry.path();
 
         if path.is_dir() {
-            visit_drs(&path, &ignore_list, &include_list, header);
+            visit_drs(&path, &ignore_list, &include_list, header, applied_list);
         } else {
-            add_header_to_file(&path, &ignore_list, &include_list, header);
+            add_header_to_file(&path, &ignore_list, &include_list, header, applied_list);
         }
     }
 }
@@ -206,7 +213,8 @@ mod tests {
         visit_drs(&get_dir(),
         &ignore_list,
         &include_list,
-"// David Serrano");
+"// David Serrano",
+&mut vec![]);
         // apply to this test file
         let path = get_dir().join(test_file);
         let contents = read_file(&path);

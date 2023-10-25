@@ -9,15 +9,22 @@
 1. from the command line, run
     `cargo install headifier`
 2. Enter project directory where you want to add headers
-3. run the binary! 
+3. Run the binary! 
     `headifier`
 4. Follow on screen instructions
 
-## RoadMap
 
+## Notes
+* Currently the only way to undo is to remove the changes via git  
+
+## RoadMap
 
 ### Features
 1. Replace option that will replace all current headers with the one you want!
+2. Creating header can apply to any file - it'll append // to every line for .ts,.js,.rs, and for css it will be /* */, html <!-- --> 
 
-### Bugs/Optimizations
+### Optimizations
 1. buttons
+
+#### Bugs
+1. remove spaces from gitignore

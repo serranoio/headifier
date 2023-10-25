@@ -1,3 +1,7 @@
 /target
 cargo.toml
 cargo.lock
+
+/tests
+
+launch.json

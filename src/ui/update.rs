@@ -40,6 +40,12 @@ fn include_screen(app: &mut App, key_event: KeyEvent) {
     // were here at an editable file of include
 }
 
+fn applied_screen(app: &mut App, key_event: KeyEvent) {
+    match key_event.code {
+        KeyCode::Esc => app.change_step(WelcomeScreenOptions::Initial),
+        _ => {}
+    };
+}
 
 fn header_screen(app: &mut App, key_event: KeyEvent) {
     match key_event.code {
@@ -99,11 +105,11 @@ fn initial_screen(app: &mut App, key_event: KeyEvent) {
 }
 
 fn new_header_screen(app: &mut App, key_event: KeyEvent) {
-editable_file(app, key_event, WelcomeScreenOptions::HeaderScreen(HeaderScreenOptions::Initial))
+editable_file(app, key_event, WelcomeScreenOptions::Initial)
 }
 
 fn from_file_header_screen(app: &mut App, key_event: KeyEvent) {
-editable_file(app, key_event, WelcomeScreenOptions::HeaderScreen(HeaderScreenOptions::Initial))
+editable_file(app, key_event, WelcomeScreenOptions::Initial)
 }
 
 fn header_screen_options(app: &mut App, key_event: KeyEvent, hs: HeaderScreenOptions) {
@@ -118,24 +124,21 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
     match &app.screen {
         WelcomeScreenOptions::HeaderScreen(ref hs) => {
             header_screen_options(app, key_event, hs.clone())
-        },
-        WelcomeScreenOptions::IgnoreScreen => {
+        }, WelcomeScreenOptions::IgnoreScreen => {
             ignore_screen(app, key_event)
-        },
-        WelcomeScreenOptions::IncludeScreen => {
+        }, WelcomeScreenOptions::IncludeScreen => {
             include_screen(app, key_event)
-        },
-        WelcomeScreenOptions::Initial => {
+        }, WelcomeScreenOptions::Initial => {
             initial_screen(app, key_event)
 
+        }, WelcomeScreenOptions::Applied => {
+            applied_screen(app, key_event)
         }
     }
 }
 
 
 fn options_resizing(app: &mut App, width: u16, height: u16) {
-
-
     
 app.set_size(super::app::Size { width , height })    
 
@@ -167,6 +170,8 @@ pub fn update_screen(app: &mut App, width: u16, height: u16) {
         },
         WelcomeScreenOptions::Initial => {
             options_resizing(app, width, height);
+
+        } WelcomeScreenOptions::Applied => {
 
         }
     }

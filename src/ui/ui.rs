@@ -1,3 +1,4 @@
+// Hello
 // Headifier 0.1.0
 // David Serrano, October 21st, 2023
 // MIT License
@@ -81,6 +82,30 @@ fn change_orientation(app: &mut App, _is_options_screen: bool) -> Direction {
   Direction::Vertical
 }
 
+fn applied_screen(app: &mut App, f: &mut Frame) {
+
+  let all = app.applied_list
+  .clone()
+  .into_iter()
+  .map(|mut s|{ s.push('\n'); s})
+.collect::<Vec<String>>()
+.join("");
+
+  f.render_widget(
+    Paragraph::new(all)
+    .block(
+        Block::default()
+            .title("Applied!")
+            .title_alignment(Alignment::Center)
+            .borders(Borders::ALL)
+            .border_type(BorderType::Rounded),
+    )
+    .style(Style::default().fg(Color::Indexed(208)))
+    .alignment(Alignment::Left),
+    f.size()
+  );
+}
+
 fn options_screen(app: &mut App, f: &mut Frame, title: &str, options: String, instructions: String) {
   let orientation = change_orientation(app, true);
   
@@ -88,7 +113,7 @@ fn options_screen(app: &mut App, f: &mut Frame, title: &str, options: String, in
     Paragraph::new(options)
     .block(
         Block::default()
-            .title(title)
+            .title(title.to_string())
             .title_alignment(Alignment::Center)
             .borders(Borders::ALL)
             .border_type(BorderType::Rounded),
@@ -190,7 +215,10 @@ pub fn render(app: &mut App, f: &mut Frame) {
       },
       WelcomeScreenOptions::Initial => {
           initial_screen(app,f);
-      },
+      }, WelcomeScreenOptions::Applied => {
+          applied_screen(app, f);
+      }
+    
     }
  
 }

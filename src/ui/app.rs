@@ -18,6 +18,7 @@ pub enum WelcomeScreenOptions {
     IgnoreScreen,
     IncludeScreen,
     Initial,
+    Applied,
 }
 
 #[derive(Debug, Clone)]
@@ -55,6 +56,8 @@ pub struct App {
     pub header: String,
     pub ignore_list: Vec<String>,
     pub include_list: Vec<String>,
+
+    pub applied_list: Vec<String>,
     // dir
     dir: PathBuf,
 
@@ -62,7 +65,6 @@ pub struct App {
     pub arrow_positions: ArrowPosition,
     // size
     pub size: Size,
-
 }
 
 impl App {
@@ -81,6 +83,7 @@ impl App {
             screen: WelcomeScreenOptions::Initial,
             include_list: vec![],
             ignore_list: list_git_ignore(&dir),
+            applied_list: vec![],
             dir,
             arrow_positions: ArrowPosition{welcome_arrow: 1, header_arrow: 1},
             size: Size { width: 0, height: 0 }
@@ -147,7 +150,10 @@ impl App {
                     self.intro_string = "Start writing to define the files to include!".into();
                 }, WelcomeScreenOptions::Initial => {
                     self.intro_string = "".into();
-                },
+                }, WelcomeScreenOptions::Applied => {
+                    self.intro_string = self.applied_list.join("");
+                }
+                
             }   
         }
     }
@@ -197,18 +203,21 @@ impl App {
             }
         },
         WelcomeScreenOptions::IgnoreScreen => {
-            self.string = App::turn_vector_to_string(&self.ignore_list);
+            self.string = App::turn_vector_to_string(&self.ignore_list); 
         },
         WelcomeScreenOptions::IncludeScreen => {
             // on include screen, we need to  include include_list as string
             self.string = App::turn_vector_to_string(&self.include_list);
         },
         WelcomeScreenOptions::Initial => {},
+        WelcomeScreenOptions::Applied => {},
     }
-    
-    if !matches!(&self.screen, WelcomeScreenOptions::HeaderScreen(HeaderScreenOptions::FromTextFile)) {
-        self.intro()
-    }
+
+
+        if !matches!(&self.screen,
+             WelcomeScreenOptions::HeaderScreen(HeaderScreenOptions::FromTextFile)) {
+            self.intro()
+        }
     }
 
     fn turn_vector_to_string(vec: &Vec<String>) -> String {
@@ -227,20 +236,22 @@ impl App {
 
                     }, HeaderScreenOptions::FromTextFile => {
                         self.header = self.string.clone();
-                        self.screen = WelcomeScreenOptions::Initial;
+                        self.screen = WelcomeScreenOptions::Applied;
                         crate::core::visit_drs(&self.dir, &self.ignore_list,
-                            &self.include_list, &self.header);
+                            &self.include_list, &self.header, &mut self.applied_list);
                     }, HeaderScreenOptions::New => {
                         self.header = self.string.clone();
-                        self.screen = WelcomeScreenOptions::Initial;
+                        self.screen = WelcomeScreenOptions::Applied;
                         crate::core::visit_drs(&self.dir, &self.ignore_list,
-                            &self.include_list, &self.header);
+                            &self.include_list, &self.header, &mut self.applied_list);
                     },
                 }
             },
             WelcomeScreenOptions::IgnoreScreen => {
+
                 self.ignore_list = App::turn_string_to_vector(&self.string);
                 self.screen = WelcomeScreenOptions::Initial;
+             
             },
             WelcomeScreenOptions::IncludeScreen => {
                 self.include_list = App::turn_string_to_vector(&self.string);
@@ -249,6 +260,7 @@ impl App {
             WelcomeScreenOptions::Initial => {
             
             },
+            WelcomeScreenOptions::Applied => {},
         }
 
         self.string = "".into();            
