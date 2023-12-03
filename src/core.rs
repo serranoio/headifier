@@ -62,14 +62,10 @@ fn prepend_header(path: &PathBuf, header: &str) {
 }
 
 fn add_header_to_file(path: &PathBuf, ignore_list: &Vec<String>,
-   include_list: &mut Vec<String>, header: &str,
+    include_list: &mut Vec<String>, header: &str,
     applied_list:  &mut Vec<String>) {
     let path_as_string = path.display().to_string().to_ascii_lowercase();
-
-        if path_as_string.contains("ignore.txt") {
-            print!("hello")
-        }
-
+    
     let mut get_ignored = false;
     for ignore in ignore_list {
         let wildmatch = WildMatch::new(&ignore);
@@ -77,18 +73,17 @@ fn add_header_to_file(path: &PathBuf, ignore_list: &Vec<String>,
             get_ignored = true;
         }
     }
-
+    
     if get_ignored {
         return; 
     }
-
+    
     for include in include_list.clone() {    
         let wildmatch = WildMatch::new(&include);
-        // print!("{include}: {}", wildmatch.matches(&include));
-        // print!("{}", path_as_string);
+        let path_as_string = path.display().to_string().to_ascii_lowercase();
 
-        if wildmatch.matches(&path_as_string) {
-            applied_list.push(path.display().to_string());
+        if wildmatch.matches(&path_as_string) && !applied_list.contains(&path_as_string) {
+            applied_list.push(path_as_string);
             prepend_header(path, header)
         }
     }
