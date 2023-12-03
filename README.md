@@ -1,8 +1,6 @@
 # Headifier
 
 
-https://github.com/serranoio/headifier/assets/75829857/e1426da1-0945-44b4-a897-56488f60630d
-
 
 ## Welcome to Headifier!
 
@@ -22,8 +20,8 @@ https://github.com/serranoio/headifier/assets/75829857/e1426da1-0945-44b4-a897-5
 * Currently the only way to undo is to remove the changes via git  
 
 ## RoadMap
- - The release cycle happens once per month, and will happen on the first per month.
-    - Next small update will be ready on December 1st.
+ - The release cycle happens once per month, and will happen at around the first every month.
+    - Next small update will be ready on about January 1st.
     - A breaking bug will be fixed ASAP
     - convenience bugs will be released every now and then
 
@@ -36,4 +34,3 @@ https://github.com/serranoio/headifier/assets/75829857/e1426da1-0945-44b4-a897-5
 
 #### Bugs
 1. remove spaces from gitignore
-2. .tsx should only change .tsx files and .ts should only change .ts
