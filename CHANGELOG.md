@@ -1,3 +1,6 @@
+# 0.1.3 12/02/23
+- added wildcards to string matching for ignore list and include list
+
 # 0.1.2 10/24/23
 - Added applied screen
 - fixed .gitignore bug where whitespace was counted
