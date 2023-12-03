@@ -1,5 +1,7 @@
 # 0.1.3 12/02/23
 - added wildcards to string matching for ignore list and include list
+- removed application of duplicates. 
+    ex: .tsx & .ts would cause any .tsx file to be written to twice
 
 # 0.1.2 10/24/23
 - Added applied screen
