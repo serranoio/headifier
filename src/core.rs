@@ -1,3 +1,4 @@
+use std::borrow::BorrowMut;
 // Headifier 0.1.0
 // David Serrano, October 21st, 2023
 // MIT License
@@ -8,6 +9,13 @@ use std::fs::{self};
 use std::io::{Write, BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 
+use wildmatch::WildMatch;
+
+use crate::ui::app;
+
+// files are marked as single paths
+// directories are marked as /
+// * count everything
 fn find(dir: &Path, name: &str) -> Option<PathBuf> {
     let mut path: Option<PathBuf> = None;
     for entry in fs::read_dir(dir).unwrap() {
@@ -54,25 +62,32 @@ fn prepend_header(path: &PathBuf, header: &str) {
 }
 
 fn add_header_to_file(path: &PathBuf, ignore_list: &Vec<String>,
-   include_list: &Vec<String>, header: &str,
+   include_list: &mut Vec<String>, header: &str,
     applied_list:  &mut Vec<String>) {
     let path_as_string = path.display().to_string().to_ascii_lowercase();
 
+        if path_as_string.contains("ignore.txt") {
+            print!("hello")
+        }
 
     let mut get_ignored = false;
     for ignore in ignore_list {
-        
-        if path_as_string.contains(ignore) {
+        let wildmatch = WildMatch::new(&ignore);
+        if wildmatch.matches(&path_as_string) {
             get_ignored = true;
         }
     }
-    
+
     if get_ignored {
-        return;
+        return; 
     }
-    
-    for include in include_list.clone() {
-        if path_as_string.contains(&include) {
+
+    for include in include_list.clone() {    
+        let wildmatch = WildMatch::new(&include);
+        // print!("{include}: {}", wildmatch.matches(&include));
+        // print!("{}", path_as_string);
+
+        if wildmatch.matches(&path_as_string) {
             applied_list.push(path.display().to_string());
             prepend_header(path, header)
         }
@@ -119,18 +134,31 @@ pub fn list_git_ignore(dir: &Path) -> Vec<String> {
     ignore_lines
 }
 
-pub fn visit_drs(dir: &Path, ignore_list: &Vec<String>,
-    include_list: &Vec<String>, header: &str,
-     applied_list:  &mut Vec<String>) {
+pub fn app_interface(dir: &Path, 
+ignore_list: &mut Vec<String>,
+include_list: &mut Vec<String>,
+header: &str,
+ applied_list:  &mut Vec<String>) {
+     
+     visit_drs(dir, ignore_list, include_list, header, applied_list)
+    }
+    
+    fn visit_drs(dir: &Path,
+        ignore_list: &mut Vec<String>,
+        include_list: &mut Vec<String>, header: &str,
+        applied_list:  &mut Vec<String>) {
+        add_wildcards_to_path(include_list);
+        add_wildcards_to_path(ignore_list);
+
     for entry in fs::read_dir(dir).unwrap() {
         let entry = entry.unwrap();
 
         let path = entry.path();
 
         if path.is_dir() {
-            visit_drs(&path, &ignore_list, &include_list, header, applied_list);
+            visit_drs(&path, ignore_list, include_list, header, applied_list);
         } else {
-            add_header_to_file(&path, &ignore_list, &include_list, header, applied_list);
+            add_header_to_file(&path, &ignore_list, include_list, header, applied_list);
         }
     }
 }
@@ -151,12 +179,21 @@ pub fn get_dir() -> PathBuf  {
     path_buf
 }
 
+pub fn add_wildcards_to_path(list: &mut Vec<String>) {
+    for item in list {
+    *item = format!("*{}*", item)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::env;
     use std::path::Path;
     use std::path::PathBuf;
 
+    use wildmatch::WildMatch;
+
+    use super::add_wildcards_to_path;
     use super::get_dir;
     use super::find_get_ignore;
     use super::read_file;
@@ -167,7 +204,7 @@ mod tests {
     pub fn test_get_dir() {
         let path = get_dir();
         let path = path.display();
-        
+
         assert_eq!(env::current_dir().unwrap().display().to_string(), path.to_string());
     }
     
@@ -186,53 +223,74 @@ mod tests {
             }
         }
     }
+    
+    const CHANGE_CONTENTS: &str = "I want to change!";
+    const IGNORE_ME: &str = "ignore me!";
 
-    fn create_file(test_file: &PathBuf) -> String {
+fn create_file(test_file: &PathBuf, contents: &str) -> String {
         let mut handle = std::fs::File::create(test_file).unwrap();
-
-        let contents = "I want to stay the same!"; 
 
         write!(handle, "{contents}").unwrap();
 
         contents.into()
-    }
+}
+
+    const ADD_TO_FILE: &str = "// David Serrano";
 
     #[test]
     pub fn test_visit_dirs() {
         // contents before
         let main_file_path = PathBuf::from("src/main.rs");
-        let contents_before = read_file(&main_file_path);
-        
-        let ignore_list: Vec<String> = vec!["/target", "cargo.toml", "cargo.lock", "README.md"].into_iter().map(|s| s.to_string()).collect();
-        let include_list: Vec<String> = vec![".txt"].into_iter().map(|s| s.to_string()).collect();
-        
+
+        let mut ignore_list: Vec<String> = vec![".git*", "/target", "cargo.toml", "cargo.lock", "README.md", "ignore.txt"].into_iter().map(|s| s.to_string()).collect();
+        let mut include_list: Vec<String> = vec!["*.txt"].into_iter().map(|s| s.to_string()).collect();
 
         let test_file = PathBuf::from("test.txt");
-        create_file(&test_file);
+        let ignore_test_file = get_dir().join(PathBuf::from("ignore.txt"));
+        create_file(&test_file, CHANGE_CONTENTS);
+        create_file(&ignore_test_file, IGNORE_ME);
 
         visit_drs(&get_dir(),
-        &ignore_list,
-        &include_list,
-"// David Serrano",
-&mut vec![]);
+        &mut ignore_list,
+        &mut include_list,
+        ADD_TO_FILE,
+        &mut vec![]);
         // apply to this test file
         let path = get_dir().join(test_file);
         let contents = read_file(&path);
         // applies changes to file
-        assert!(contents.len() > 0);  // it added // David Serrano
-        assert_eq!(contents,"// David Serrano\nI want to stay the same!");
+        assert_eq!(contents, format!("{}\n{}",ADD_TO_FILE, CHANGE_CONTENTS));
 
-        // but dont apply to this file (since ignore_list contains /target path)
-        let path = get_dir().join(PathBuf::from("target/test_2.txt"));
-
-        assert!(read_file(&path).len() == 0);
-        
-        // contents after: and dont apply to random file
-        let contents_after = read_file(&main_file_path);
-        assert_eq!(contents_before, contents_after);
+        let path = get_dir().join(ignore_test_file);
+        let contents = read_file(&path);
+        assert_eq!(contents, format!("{}",IGNORE_ME));
+        // but dont apply to this file
     }
 
-    
+    #[test]
+    pub fn test_wild_cards() {
+    let mut include_list: Vec<String> = vec!["*.txt", "target", "*json", "include.txt"].into_iter().map(|s| s.to_string()).collect();
+
+    add_wildcards_to_path(&mut include_list);
+
+    print!("{:?}", include_list);
+    assert!(WildMatch::new(&include_list[0]).matches("random/folder/bacon.txt"));
+    assert!(WildMatch::new(&include_list[0]).matches("random-folder/bacon.txt"));
+    assert!(WildMatch::new(&include_list[0]).matches("hello/bacon.txt"));
+    assert!(WildMatch::new(&include_list[0]).matches("bacon.txt"));
+    assert!(WildMatch::new(&include_list[0]).matches("cool.txt"));
+    assert!(WildMatch::new(&include_list[0]).matches("ok.txt"));
+
+    assert!(WildMatch::new(&include_list[1]).matches("/target/ok.txt"));
+    assert!(WildMatch::new(&include_list[1]).matches("/target/asdasd/ok.txt"));
+    assert!(WildMatch::new(&include_list[1]).matches("/target/asdasd/oasdaisd.txt"));
+    assert!(WildMatch::new(&include_list[1]).matches("/target/asdasd/oasdaisd.ts"));
+
+    assert!(WildMatch::new(&include_list[2]).matches("launch.json"));
+    assert!(WildMatch::new(&include_list[2]).matches("hello.json"));
+
+    assert!(WildMatch::new(&include_list[3]).matches("include.txt"));
+}
 
 
 

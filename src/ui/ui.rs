@@ -1,8 +1,3 @@
-// Hello
-// Headifier 0.1.0
-// David Serrano, October 21st, 2023
-// MIT License
-// Made With Love ❤️
 use ratatui::{
     layout::Alignment,
     prelude::{Buffer, Rect, Layout, Constraint, Direction},

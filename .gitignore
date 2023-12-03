@@ -1,7 +1,9 @@
-/target
+target
 cargo.toml
 cargo.lock
 
 /tests
+
+hello.txt
 
 launch.json

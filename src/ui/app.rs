@@ -237,13 +237,13 @@ impl App {
                     }, HeaderScreenOptions::FromTextFile => {
                         self.header = self.string.clone();
                         self.screen = WelcomeScreenOptions::Applied;
-                        crate::core::visit_drs(&self.dir, &self.ignore_list,
-                            &self.include_list, &self.header, &mut self.applied_list);
+                        crate::core::app_interface(&self.dir, &mut self.ignore_list,
+                            &mut self.include_list, &self.header, &mut self.applied_list);
                     }, HeaderScreenOptions::New => {
                         self.header = self.string.clone();
                         self.screen = WelcomeScreenOptions::Applied;
-                        crate::core::visit_drs(&self.dir, &self.ignore_list,
-                            &self.include_list, &self.header, &mut self.applied_list);
+                        crate::core::app_interface(&self.dir, &mut self.ignore_list,
+                            &mut self.include_list, &self.header, &mut self.applied_list);
                     },
                 }
             },
