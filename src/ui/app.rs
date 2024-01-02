@@ -40,6 +40,13 @@ pub struct Size {
     pub height: u16,
 }
 
+#[derive(PartialEq, Debug)]
+pub enum Mode {
+    Add,
+    Replace, 
+    None
+}
+
 #[derive(Debug)]
 pub struct App {
     /// should the application exit?
@@ -228,7 +235,7 @@ impl App {
         string.split_whitespace().map(|s| s.to_string()).collect()
     }
 
-    pub fn apply_text(&mut self) {
+    pub fn apply_text(&mut self, mode: &Mode) {
         match &self.screen {
             WelcomeScreenOptions::HeaderScreen(hs) => {
                 match hs {
@@ -238,12 +245,12 @@ impl App {
                         self.header = self.string.clone();
                         self.screen = WelcomeScreenOptions::Applied;
                         crate::core::app_interface(&self.dir, &mut self.ignore_list,
-                            &mut self.include_list, &self.header, &mut self.applied_list);
+                            &mut self.include_list, &self.header, &mut self.applied_list, &mode);
                     }, HeaderScreenOptions::New => {
                         self.header = self.string.clone();
                         self.screen = WelcomeScreenOptions::Applied;
                         crate::core::app_interface(&self.dir, &mut self.ignore_list,
-                            &mut self.include_list, &self.header, &mut self.applied_list);
+                            &mut self.include_list, &self.header, &mut self.applied_list, &mode);
                     },
                 }
             },

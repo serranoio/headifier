@@ -2,7 +2,33 @@ use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::ui::app::App;
 
-use super::app::{WelcomeScreenOptions, HeaderScreenOptions, ONE, TWO, THREE};
+use super::app::{WelcomeScreenOptions, HeaderScreenOptions, ONE, TWO, THREE, Mode};
+
+
+// ONLY LET QUIT AT BEGINNING PAGE, OTHERWISE, ESCAPE GOES BACK
+fn editable_file_header(app: &mut App, key_event: KeyEvent,
+    back_screen: WelcomeScreenOptions) {
+    match key_event.code {
+        KeyCode::Esc => app.change_step(back_screen),  // GO BACK
+        KeyCode::Char(c) => {
+          app.add_char(c)
+        },
+        KeyCode::Backspace => {
+          app.remove_char()
+        }
+        KeyCode::Enter => {
+          app.add_char('\n')
+        },
+        KeyCode::Right => {
+        app.apply_text(&Mode::Add)  
+        },
+        KeyCode::Left => {
+        app.apply_text(&Mode::Replace)
+        }
+    
+        _ => {}
+      };
+}
 
 // ONLY LET QUIT AT BEGINNING PAGE, OTHERWISE, ESCAPE GOES BACK
 fn editable_file(app: &mut App, key_event: KeyEvent,
@@ -19,7 +45,7 @@ fn editable_file(app: &mut App, key_event: KeyEvent,
           app.add_char('\n')
         },
         KeyCode::Right => {
-          app.apply_text()  
+          app.apply_text(&Mode::None)  
         }
     
         _ => {}
@@ -101,11 +127,11 @@ fn initial_screen(app: &mut App, key_event: KeyEvent) {
 }
 
 fn new_header_screen(app: &mut App, key_event: KeyEvent) {
-editable_file(app, key_event, WelcomeScreenOptions::Initial)
+editable_file_header(app, key_event, WelcomeScreenOptions::Initial)
 }
 
 fn from_file_header_screen(app: &mut App, key_event: KeyEvent) {
-editable_file(app, key_event, WelcomeScreenOptions::Initial)
+editable_file_header(app, key_event, WelcomeScreenOptions::Initial)
 }
 
 fn header_screen_options(app: &mut App, key_event: KeyEvent, hs: HeaderScreenOptions) {

@@ -34,3 +34,7 @@
 
 #### Bugs
 1. remove spaces from gitignore
+
+
+
+// the only thing left to do is to remove the lines with the comments in the replace functions

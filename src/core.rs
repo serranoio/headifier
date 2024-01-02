@@ -1,8 +1,7 @@
-use std::borrow::BorrowMut;
-// Headifier 0.1.0
-// David Serrano, October 21st, 2023
-// MIT License
-// Made With Love ❤️
+// Hello!
+// Headifier 0.4.0
+// David Serrano, Jan 2nd, 2024
+// Made with love.
 use std::env;
 use std::fs::File;
 use std::fs::{self};
@@ -11,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 use wildmatch::WildMatch;
 
-use crate::ui::app;
+use crate::ui::app::{self, Mode};
 
 // files are marked as single paths
 // directories are marked as /
@@ -40,7 +39,7 @@ fn read_file(path: &PathBuf) -> String {
     let mut contents = String::new();
     buf_reader.read_to_string(&mut contents).unwrap();
 
-    contents    
+    contents
 }
 
 pub fn find_header(dir: &Path) -> Option<String> {
@@ -52,18 +51,76 @@ pub fn find_header(dir: &Path) -> Option<String> {
     } 
 }
 
-
-fn prepend_header(path: &PathBuf, header: &str) {
+fn prepend_header(path: &PathBuf, header: &str, mode: &Mode) -> bool {
     let contents = read_file(path);
 
     let mut write_to_file = File::create(path).unwrap();
 
-    write!(write_to_file, "{header}\n{contents}").unwrap();
+    let (contents, comment_count) = prepare_header(contents, header, mode);
+    write!(write_to_file, "{}", contents).unwrap();
+
+    let mut is_edited = false;
+
+    if comment_count == 0 && *mode == Mode::Add {
+        is_edited = true
+    } else if *mode == Mode::Replace {
+        is_edited = true
+    }
+
+    return is_edited 
+}
+
+// lets also add deleting all headers
+
+// take every file,
+// take your new header,
+fn contains_header(contents: &String, mode: &Mode) -> (String, i32) {
+// the only thing left to do is to remove the lines with the comments in the replace function
+
+let mut comments = 0;
+    let mut found_code = false;
+    let new_contents = contents.split("\n")
+    .map(|line| {
+        if line.contains("//") {
+            if !found_code {
+                comments+=1;
+                
+                if *mode == Mode::Replace {
+                    return "".to_owned();
+                }
+            }
+        } else {
+            found_code = true;
+        }
+
+        return format!("{}\n", line)
+    }).collect();
+
+    return (new_contents, comments)
+}
+
+pub fn prepare_header(contents: String, header: &str, mode: &Mode) -> (String, i32) {    
+    // assume comments at beginning is header
+    let (contents, comment_count) =  contains_header(&contents, mode);
+    
+    if *mode == Mode::Add && comment_count == 0 || *mode == Mode::Replace { // no comments
+        // if file does not contain header-> add headers to all
+        return (format!("{header}\n{contents}"), 0);
+    } else if comment_count > 0 && *mode == Mode::Add {
+        // if file contains header -> only bump version # and change date if git detects a change
+        // or as of now, we dont add header
+        return (format!("{contents}"), comment_count);
+        // how would we find a date?
+        // how would we get the version #
+    }
+
+    return (String::from("{contents}"), comment_count);
 }
 
 fn add_header_to_file(path: &PathBuf, ignore_list: &Vec<String>,
     include_list: &mut Vec<String>, header: &str,
-    applied_list:  &mut Vec<String>) {
+    applied_list:  &mut Vec<String>,
+    mode: &Mode) {
     let path_as_string = path.display().to_string().to_ascii_lowercase();
     
     let mut get_ignored = false;
@@ -83,8 +140,10 @@ fn add_header_to_file(path: &PathBuf, ignore_list: &Vec<String>,
         let path_as_string = path.display().to_string().to_ascii_lowercase();
 
         if wildmatch.matches(&path_as_string) && !applied_list.contains(&path_as_string) {
-            applied_list.push(path_as_string);
-            prepend_header(path, header)
+            let is_edited = prepend_header(path, header, mode);
+            if is_edited {
+                applied_list.push(path_as_string);
+            }
         }
     }
 }
@@ -133,15 +192,17 @@ pub fn app_interface(dir: &Path,
 ignore_list: &mut Vec<String>,
 include_list: &mut Vec<String>,
 header: &str,
- applied_list:  &mut Vec<String>) {
+ applied_list:  &mut Vec<String>,
+mode: &Mode) {
      
-     visit_drs(dir, ignore_list, include_list, header, applied_list)
+     visit_drs(dir, ignore_list, include_list, header, applied_list, &mode)
     }
     
     fn visit_drs(dir: &Path,
         ignore_list: &mut Vec<String>,
         include_list: &mut Vec<String>, header: &str,
-        applied_list:  &mut Vec<String>) {
+        applied_list:  &mut Vec<String>,
+    mode: &Mode) {
         add_wildcards_to_path(include_list);
         add_wildcards_to_path(ignore_list);
 
@@ -151,9 +212,9 @@ header: &str,
         let path = entry.path();
 
         if path.is_dir() {
-            visit_drs(&path, ignore_list, include_list, header, applied_list);
+            visit_drs(&path, ignore_list, include_list, header, applied_list, &mode);
         } else {
-            add_header_to_file(&path, &ignore_list, include_list, header, applied_list);
+            add_header_to_file(&path, &ignore_list, include_list, header, applied_list, &mode);
         }
     }
 }
@@ -176,10 +237,20 @@ pub fn get_dir() -> PathBuf  {
 
 pub fn add_wildcards_to_path(list: &mut Vec<String>) {
     for item in list {
-    *item = format!("*{}*", item)
+        let mut last = String::from("");
+        let mut first = String::from("");
+        if !(item.chars().next().unwrap() == '*') {
+            first = "*".to_owned()
+        }
+
+        if !(item.chars().last().unwrap() == '*') {
+            last = "*".to_owned();
+        }
+
+
+    *item = format!("{}{}{}", first, item, last)
     }
 }
-
 #[cfg(test)]
 mod tests {
     use std::env;
@@ -187,6 +258,8 @@ mod tests {
     use std::path::PathBuf;
 
     use wildmatch::WildMatch;
+
+    use crate::ui::app::Mode;
 
     use super::add_wildcards_to_path;
     use super::get_dir;
@@ -249,7 +322,7 @@ fn create_file(test_file: &PathBuf, contents: &str) -> String {
         &mut ignore_list,
         &mut include_list,
         ADD_TO_FILE,
-        &mut vec![]);
+        &mut vec![], &Mode::Add);
         // apply to this test file
         let path = get_dir().join(test_file);
         let contents = read_file(&path);
@@ -259,6 +332,13 @@ fn create_file(test_file: &PathBuf, contents: &str) -> String {
         let path = get_dir().join(ignore_test_file);
         let contents = read_file(&path);
         assert_eq!(contents, format!("{}",IGNORE_ME));
+
+
+        let mut include_list: Vec<String> = vec![".rs"].into_iter().map(|s| { s.to_string()}).collect();
+        let mut ignore_list: Vec<String> = vec![".git*", "target"].into_iter().map(|s| { s.to_string()}).collect();
+
+
+        visit_drs(&get_dir(), &mut ignore_list, &mut include_list, ADD_TO_FILE, &mut vec![], &Mode::Add);
         // but dont apply to this file
     }
 
