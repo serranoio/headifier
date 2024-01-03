@@ -1,7 +1,7 @@
-// Headifier 0.4.0
+// Headifier 0.2.0
 // David Serrano
-// January 3rd, 2023
-
+// January 3rd, 2024
+// Made with love <3
 
 use std::env;
 use std::fs::File;
@@ -81,7 +81,8 @@ fn contains_header(contents: &String, mode: &Mode) -> (String, i32) {
 let mut comments = 0;
     let mut found_code = false;
     let new_contents = contents.split("\n")
-    .map(|line| {
+    .enumerate()
+    .map(|(i, line)| {
         if line.contains("//") {
             if !found_code {
                 comments+=1;
@@ -94,28 +95,34 @@ let mut comments = 0;
             found_code = true;
         }
 
+    
         return format!("{}\n", line)
-    }).collect();
+    
+    }).collect::<String>();
 
-    return (new_contents, comments)
+    // remove last new line added
+    return (format!("{}",new_contents[0..new_contents.len()-1].to_string()), comments)
 }
 
 pub fn prepare_header(contents: String, header: &str, mode: &Mode) -> (String, i32) {    
     // assume comments at beginning is header
     let (contents, comment_count) =  contains_header(&contents, mode);
-    
+
+
     if *mode == Mode::Add && comment_count == 0 || *mode == Mode::Replace { // no comments
-        // if file does not contain header-> add headers to all
+        // if file does not contain header -> add headers to all
+        
         return (format!("{header}\n{contents}"), 0);
     } else if comment_count > 0 && *mode == Mode::Add {
+        
         // if file contains header -> only bump version # and change date if git detects a change
         // or as of now, we dont add header
-        return (format!("{contents}"), comment_count);
+        return (contents, comment_count);
         // how would we find a date?
         // how would we get the version #
     }
 
-    return (String::from("{contents}"), comment_count);
+    return (contents, comment_count);
 }
 
 fn add_header_to_file(path: &PathBuf, ignore_list: &Vec<String>,
@@ -160,7 +167,6 @@ fn find_get_ignore(dir: &Path) -> Result<PathBuf, String> {
 
     Err("Could not locate .gitignore".into())
 }
-
 
 // return list of every file to ignore
 pub fn list_git_ignore(dir: &Path) -> Vec<String> {
@@ -305,27 +311,23 @@ fn create_file(test_file: &PathBuf, contents: &str) -> String {
 }
 
     const ADD_TO_FILE: &str = "// David Serrano";
+    const ADD_TO_FILE_2: &str = "// David Serrano\n// New";
 
-    #[test]
-    pub fn test_visit_dirs() {
+    // can only run one test each. that's ok for now.
+    // #[test]
+    pub fn test_visit_dirs_replace() {
         // contents before
         let main_file_path = PathBuf::from("src/main.rs");
 
-        let mut ignore_list: Vec<String> = vec![".git*", "/target", "cargo.toml", "cargo.lock", "README.md", "ignore.txt"].into_iter().map(|s| s.to_string()).collect();
-        let mut include_list: Vec<String> = vec!["*.txt"].into_iter().map(|s| s.to_string()).collect();
-
-        let test_file = PathBuf::from("test.txt");
-        let ignore_test_file = get_dir().join(PathBuf::from("ignore.txt"));
-        create_file(&test_file, CHANGE_CONTENTS);
-        create_file(&ignore_test_file, IGNORE_ME);
+        let (mut ignore_list, mut include_list, test_file, ignore_test_file) = setup_visit_dirs("test.txt", "ignore.txt");
 
         visit_drs(&get_dir(),
         &mut ignore_list,
         &mut include_list,
         ADD_TO_FILE,
-        &mut vec![], &Mode::Add);
+        &mut vec![], &Mode::Replace);
         // apply to this test file
-        let path = get_dir().join(test_file);
+        let path = get_dir().join(test_file.clone());
         let contents = read_file(&path);
         // applies changes to file
         assert_eq!(contents, format!("{}\n{}",ADD_TO_FILE, CHANGE_CONTENTS));
@@ -334,13 +336,53 @@ fn create_file(test_file: &PathBuf, contents: &str) -> String {
         let contents = read_file(&path);
         assert_eq!(contents, format!("{}",IGNORE_ME));
 
+        visit_drs(&get_dir(), &mut ignore_list, &mut include_list, ADD_TO_FILE_2, &mut vec![], &Mode::Replace);
 
-        let mut include_list: Vec<String> = vec![".rs"].into_iter().map(|s| { s.to_string()}).collect();
-        let mut ignore_list: Vec<String> = vec![".git*", "target"].into_iter().map(|s| { s.to_string()}).collect();
-
-
-        visit_drs(&get_dir(), &mut ignore_list, &mut include_list, ADD_TO_FILE, &mut vec![], &Mode::Add);
+        let path = get_dir().join(test_file);
+        let contents = read_file(&path);
+        assert_eq!(contents, format!("{}\n{}", ADD_TO_FILE_2, CHANGE_CONTENTS));
         // but dont apply to this file
+    }
+
+    fn setup_visit_dirs(test_file: &str, ignore_file: &str) -> (Vec<String>, Vec<String>, PathBuf, PathBuf) {
+        let ignore_list: Vec<String> = vec![".git*", "/target", "cargo.toml", "cargo.lock", "README.md", "ignore.txt"].into_iter().map(|s| s.to_string()).collect();
+        let include_list: Vec<String> = vec!["*.txt"].into_iter().map(|s| s.to_string()).collect();
+
+        let test_file = PathBuf::from(test_file);
+        let ignore_test_file = get_dir().join(PathBuf::from(ignore_file));
+        create_file(&test_file, CHANGE_CONTENTS);
+        create_file(&ignore_test_file, IGNORE_ME);
+
+        return (ignore_list, include_list, test_file, ignore_test_file)
+    }
+
+    #[test]
+    pub fn test_visit_dirs_add() {
+        // contents before
+        let main_file_path = PathBuf::from("src/main.rs");
+        let (mut ignore_list, mut include_list, test_file, ignore_test_file) = setup_visit_dirs("test.txt", "ignore.txt");
+
+        visit_drs(&get_dir(),
+        &mut ignore_list,
+        &mut include_list,
+        ADD_TO_FILE,
+        &mut vec![], &Mode::Add);
+        // apply to this test file
+        let path = get_dir().join(test_file.clone());
+        let contents = read_file(&path);
+        // applies changes to file
+        assert_eq!(contents, format!("{}\n{}",ADD_TO_FILE, CHANGE_CONTENTS));
+
+        let path = get_dir().join(ignore_test_file);
+        let contents = read_file(&path);
+        assert_eq!(contents, format!("{}",IGNORE_ME));
+
+        visit_drs(&get_dir(), &mut ignore_list, &mut include_list, ADD_TO_FILE_2, &mut vec![], &Mode::Add);
+        // but dont apply to this file
+        let path = get_dir().join(test_file);
+        let contents = read_file(&path);
+        assert_eq!(contents, format!("{}\n{}", ADD_TO_FILE, CHANGE_CONTENTS));
+    
     }
 
     #[test]
@@ -368,11 +410,4 @@ fn create_file(test_file: &PathBuf, contents: &str) -> String {
     assert!(WildMatch::new(&include_list[3]).matches("include.txt"));
 }
 
-
-
-
 }
-
-
-
-

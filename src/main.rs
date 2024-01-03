@@ -1,4 +1,9 @@
-// Headifier 0.4.0
+// Headifier 0.2.0
+// David Serrano
+// January 3rd, 2024
+// Made with love <3
+
+
 // David Serrano
 // January 3rd, 2023
 
@@ -12,6 +17,8 @@ use anyhow::Result;
 fn main() -> Result<()> {
     init_ratui()
 }
+
+
 
 
 

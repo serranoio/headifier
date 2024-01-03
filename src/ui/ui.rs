@@ -1,6 +1,7 @@
-// Headifier 0.4.0
+// Headifier 0.2.0
 // David Serrano
-// January 3rd, 2023
+// January 3rd, 2024
+// Made with love <3
 
 
 use std::ops::Index;
@@ -104,6 +105,7 @@ fn applied_screen(app: &mut App, f: &mut Frame) {
     .alignment(Alignment::Left),
     f.size()
   );
+
 }
 
 fn options_screen(app: &mut App, f: &mut Frame, title: &str, options: String, instructions: String) {
@@ -173,10 +175,9 @@ pub fn header_screen(app: &mut App, f: &mut Frame) {
   let instructions = format!("1 to use contents of header.txt base of as header
 2 to write new header in terminal.
 Or, use Up and Down arrow keys to navigate,
- and press Enter to advance");
+and press Enter to advance");
 
-  options_screen(app, f, "Header Options", options, instructions);
-  
+options_screen(app, f, "Header Options", options, instructions);
 
 }
 
@@ -223,10 +224,4 @@ pub fn render(app: &mut App, f: &mut Frame) {
       }
     
     }
- 
 }
-
-
-
-
-

@@ -1,9 +1,10 @@
-// Headifier 0.4.0
+// Headifier 0.2.0
 // David Serrano
-// January 3rd, 2023
+// January 3rd, 2024
+// Made with love <3
 
 
-use std::{path::PathBuf};
+use std::{path::PathBuf, time::Duration, thread::sleep};
 
 use crate::core::{ list_git_ignore, get_dir, find_header};
 
@@ -72,6 +73,8 @@ pub struct App {
     pub arrow_positions: ArrowPosition,
     // size
     pub size: Size,
+
+    applied_counter: u32,
 }
 
 impl App {
@@ -93,7 +96,8 @@ impl App {
             applied_list: vec![],
             dir,
             arrow_positions: ArrowPosition{welcome_arrow: 1, header_arrow: 1},
-            size: Size { width: 0, height: 0 }
+            size: Size { width: 0, height: 0 },
+            applied_counter: 0,
         }
     }
 
@@ -113,6 +117,15 @@ impl App {
             self.display_cursor = String::from("");
         }
         self.display_cursor_counter += 1;
+
+        if matches!(self.screen, WelcomeScreenOptions::Applied) {
+            
+            self.applied_counter += 1;
+
+            if self.applied_counter > 10 {
+                self.quit()
+            } 
+        }
     }
 
     pub fn increment_arrow_position(&mut self) {
@@ -217,7 +230,8 @@ impl App {
             self.string = App::turn_vector_to_string(&self.include_list);
         },
         WelcomeScreenOptions::Initial => {},
-        WelcomeScreenOptions::Applied => {},
+        WelcomeScreenOptions::Applied => {
+        },
     }
 
 
@@ -275,6 +289,8 @@ impl App {
 }
 
 mod tests {}
+
+
 
 
 

@@ -1,7 +1,7 @@
-// Headifier 0.4.0
 // David Serrano
-// January 3rd, 2023
 
+
+use std::{time::Duration, thread::sleep};
 
 use crossterm::event::{KeyCode, KeyEvent};
 
@@ -203,6 +203,9 @@ pub fn update_screen(app: &mut App, width: u16, height: u16) {
         }
     }
 }
+
+
+
 
 
 

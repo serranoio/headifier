@@ -1,7 +1,7 @@
-// Headifier 0.4.0
+// Headifier 0.2.0
 // David Serrano
-// January 3rd, 2023
-
+// January 3rd, 2024
+// Made with love <3
 
 use crate::ui::app::App;
 use crate::ui::event::{Event, EventHandler};
@@ -38,8 +38,3 @@ pub fn init_ratui() -> Result<()> {
     tui.exit()?;
     Ok(())
 }
-
-
-
-
-
