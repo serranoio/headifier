@@ -1,9 +1,15 @@
-// Headifier 0.1.0
-// David Serrano, October 21st, 2023
-// MIT License
-// Made With Love ❤️
+// Headifier 0.4.0
+// David Serrano
+// January 3rd, 2023
+
+
 pub mod app;
 pub mod event;
 pub mod tui;
 pub mod ui;
 pub mod update;
+
+
+
+
+

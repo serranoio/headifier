@@ -1,7 +1,8 @@
-// Hello!
 // Headifier 0.4.0
-// David Serrano, Jan 2nd, 2024
-// Made with love.
+// David Serrano
+// January 3rd, 2023
+
+
 use std::env;
 use std::fs::File;
 use std::fs::{self};
@@ -371,3 +372,7 @@ fn create_file(test_file: &PathBuf, contents: &str) -> String {
 
 
 }
+
+
+
+

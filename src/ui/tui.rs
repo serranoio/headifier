@@ -1,7 +1,8 @@
-// Headifier 0.1.0
-// David Serrano, October 21st, 2023
-// MIT License
-// Made With Love ❤️
+// Headifier 0.4.0
+// David Serrano
+// January 3rd, 2023
+
+
 use std::{io, panic};
 
 use anyhow::Result;
@@ -80,3 +81,8 @@ impl Tui {
         Ok(())
     }
 }
+
+
+
+
+

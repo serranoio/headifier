@@ -1,3 +1,9 @@
+// Headifier 0.4.0
+// David Serrano
+// January 3rd, 2023
+
+
+use std::ops::Index;
 use ratatui::{
     layout::Alignment,
     prelude::{Buffer, Rect, Layout, Constraint, Direction},
@@ -32,7 +38,7 @@ fn text_rect(r: Rect,  decide: usize, orientation: Direction) -> Rect {
       popup_layout[decide]
 }
       
-fn write_screen(app: &mut App, f: &mut Frame, title: &str) {
+fn write_screen(app: &mut App, f: &mut Frame, title: &str, instructions: &str) {
   let orientation = change_orientation(app, true);
   
   f.render_widget(
@@ -54,8 +60,7 @@ fn write_screen(app: &mut App, f: &mut Frame, title: &str) {
  
   f.render_widget(
     Paragraph::new(format!(
-        "Press Esc to go back\nPress right arrow to apply changes"
-    ))
+        "Press Esc to go back\n{}", instructions))
     .block(
         Block::default()
             .title("instructions")
@@ -175,20 +180,23 @@ Or, use Up and Down arrow keys to navigate,
 
 }
 
+const INSTRUCTIONS: &str = "Right arrow to add headers to files without headers\nLeft arrow to add headers to ALL headers (replace)";
 pub fn new_header_screen(app: &mut App, f: &mut Frame) {
-  write_screen(app, f, "New Header"); 
+  write_screen(app, f, "New Header", INSTRUCTIONS); 
 }
 
 pub fn from_text_header_screen(app: &mut App, f: &mut Frame) {
-  write_screen(app, f, "header.txt");
+  write_screen(app, f, "header.txt", INSTRUCTIONS);
 }
 
 pub fn ignore_screen(app: &mut App, f: &mut Frame) {
-  write_screen(app, f, "List Of Files To Ignore");
+  let instructions = "Right arrow to add headers to files without headers";
+  write_screen(app, f, "List Of Files To Ignore", instructions);
 }
 
 pub fn include_screen(app: &mut App, f: &mut Frame) {
-  write_screen(app, f, "List Of Files To Include");
+  let instructions = "Right arrow to add headers to files without headers";
+  write_screen(app, f, "List Of Files To Include", instructions);
 }
 
 pub fn render(app: &mut App, f: &mut Frame) {
@@ -217,3 +225,8 @@ pub fn render(app: &mut App, f: &mut Frame) {
     }
  
 }
+
+
+
+
+

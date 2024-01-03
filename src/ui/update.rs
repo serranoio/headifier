@@ -1,3 +1,8 @@
+// Headifier 0.4.0
+// David Serrano
+// January 3rd, 2023
+
+
 use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::ui::app::App;
@@ -198,6 +203,11 @@ pub fn update_screen(app: &mut App, width: u16, height: u16) {
         }
     }
 }
+
+
+
+
+
 
 
 

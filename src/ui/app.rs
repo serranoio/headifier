@@ -1,8 +1,8 @@
+// Headifier 0.4.0
 // David Serrano
-// Headifier 0.1.0
-// David Serrano, October 21st, 2023
-// MIT License
-// Made With Love ❤️
+// January 3rd, 2023
+
+
 use std::{path::PathBuf};
 
 use crate::core::{ list_git_ignore, get_dir, find_header};
@@ -275,3 +275,8 @@ impl App {
 }
 
 mod tests {}
+
+
+
+
+
