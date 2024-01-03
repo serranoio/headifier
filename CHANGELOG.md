@@ -1,3 +1,7 @@
+# 0.2.0 01/03/24
+- added Add vs Replace features
+- quits the applied screen after 10 ticks
+
 # 0.1.3 12/02/23
 - added wildcards to string matching for ignore list and include list
 - removed application of duplicates. 
