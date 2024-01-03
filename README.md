@@ -22,7 +22,7 @@
 
 ## RoadMap
  - The release cycle happens once per month, and will happen at around the first every month.
-    - Next small update will be ready on about January 1st.
+    - Next small update will be ready on about Febuary 1st.
     - A breaking bug will be fixed ASAP
     - convenience bugs will be released every now and then
 
